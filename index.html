@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Capital — Investment Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:#7A6030;
+  --obsidian:#0A0A0B;--deep:#0E0E10;--surface:#14141A;--surface-2:#1A1A22;
+  --border:rgba(201,168,76,0.15);--text:#F0EDE6;--text-dim:#8A8680;--text-muted:#4A4845;
+  --green:#4ADE80;--red:#F87171;--blue:#60A5FA;--yellow:#FBBF24;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--obsidian);color:var(--text);font-family:'Instrument Sans',sans-serif;font-weight:300;min-height:100vh;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--deep);}::-webkit-scrollbar-thumb{background:var(--gold-dim);}
+.page{display:none;min-height:100vh;}.page.active{display:block;}
+
+/* ─── AUTH ─────────────────────────────────── */
+.auth-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+.auth-left{background:linear-gradient(160deg,#0D1117,#0A0A0B 60%,#0D1006);display:flex;flex-direction:column;justify-content:center;padding:80px;position:relative;overflow:hidden;}
+.auth-left::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(201,168,76,0.06),transparent 65%);}
+.auth-brand{font-family:'Cormorant Garamond',serif;font-size:28px;letter-spacing:.25em;text-transform:uppercase;margin-bottom:56px;}
+.auth-brand span{color:var(--gold);}
+.auth-title{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,4vw,62px);font-weight:300;line-height:1.1;margin-bottom:20px;}
+.auth-title em{font-style:italic;color:var(--gold-light);}
+.auth-sub{font-size:15px;color:var(--text-dim);line-height:1.7;max-width:380px;margin-bottom:44px;}
+.auth-stats{display:flex;gap:36px;}
+.auth-stat-v{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--gold-light);}
+.auth-stat-l{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted);margin-top:3px;}
+.auth-right{background:var(--deep);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 80px;}
+.auth-box{width:100%;max-width:420px;}
+.auth-tabs{display:flex;margin-bottom:36px;border-bottom:1px solid var(--border);}
+.auth-tab{flex:1;padding:14px;text-align:center;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .3s;}
+.auth-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.auth-form{display:none;}.auth-form.active{display:block;}
+.form-group{margin-bottom:18px;}
+.form-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:7px;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:13px 15px;font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:300;outline:none;transition:border-color .3s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--gold-dim);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text-muted);}
+.form-select{appearance:none;cursor:pointer;}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.btn{padding:13px 24px;font-family:'Instrument Sans',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .3s;border:none;}
+.btn-primary{background:var(--gold);color:var(--obsidian);}
+.btn-primary:hover{background:var(--gold-light);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-full{width:100%;margin-top:6px;}
+.btn-success{background:var(--green);color:#0A0A0B;}
+.btn-success:hover{background:#6EE7A0;}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);}
+.btn-danger:hover{background:rgba(248,113,113,.1);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+.auth-msg{font-size:12px;text-align:center;margin-top:14px;min-height:18px;}
+.auth-msg.success{color:var(--green);}.auth-msg.error{color:var(--red);}
+
+/* ─── DASH LAYOUT ──────────────────────────── */
+.dash-wrap{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:var(--deep);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sb-brand{padding:28px 24px;border-bottom:1px solid var(--border);}
+.sb-brand-name{font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:.2em;text-transform:uppercase;}
+.sb-brand-name span{color:var(--gold);}
+.sb-user{padding:18px 24px;border-bottom:1px solid var(--border);}
+.sb-user-name{font-size:14px;font-weight:400;}
+.sb-user-role{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-top:3px;}
+.sb-nav{padding:12px 0;flex:1;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;font-size:13px;color:var(--text-dim);cursor:pointer;transition:all .2s;border-left:2px solid transparent;user-select:none;}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.02);}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,.05);}
+.nav-icon{font-size:15px;width:18px;text-align:center;}
+.nav-badge{background:var(--red);color:white;font-size:9px;font-weight:600;border-radius:10px;padding:2px 6px;margin-left:auto;}
+.sb-bottom{padding:18px 24px;border-top:1px solid var(--border);}
+.btn-logout{width:100%;background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:10px;font-family:'Instrument Sans',sans-serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .3s;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+.dash-main{background:var(--obsidian);overflow-y:auto;}
+.dash-header{padding:28px 44px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--deep);position:sticky;top:0;z-index:10;}
+.dash-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;}
+.dash-content{padding:36px 44px;}
+.panel{display:none;}.panel.active{display:block;}
+
+/* ─── COMPONENTS ───────────────────────────── */
+.balance-hero{background:linear-gradient(135deg,var(--surface),#0D1117);border:1px solid var(--border);padding:40px;margin-bottom:24px;position:relative;overflow:hidden;}
+.balance-hero::before{content:'';position:absolute;right:-60px;top:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(201,168,76,.06),transparent 70%);}
+.balance-label{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.balance-amount{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,64px);font-weight:300;line-height:1;}
+.balance-curr{font-size:24px;color:var(--gold-dim);margin-right:4px;}
+.balance-row{display:flex;gap:28px;margin-top:18px;flex-wrap:wrap;}
+.bal-item-val{font-size:18px;font-weight:400;}.bal-item-val.pos{color:var(--green);}.bal-item-val.neg{color:var(--red);}
+.bal-item-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-top:3px;}
+
+.cards-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);margin-bottom:24px;}
+.card{background:var(--surface);padding:26px 28px;}
+.card-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.card-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--gold-light);}
+.card-sub{font-size:12px;margin-top:5px;color:var(--text-muted);}
+.card-sub.pos{color:var(--green);}.card-sub.neg{color:var(--red);}
+
+.section-box{background:var(--surface);border:1px solid var(--border);margin-bottom:24px;}
+.section-box-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.section-box-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{padding:12px 20px;text-align:left;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:14px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.015);}
+
+.badge{display:inline-block;padding:3px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;}
+.badge-pending{color:var(--yellow);background:rgba(251,191,36,.08);}
+.badge-approved,.badge-completed{color:var(--green);background:rgba(74,222,128,.08);}
+.badge-rejected{color:var(--red);background:rgba(248,113,113,.08);}
+.badge-processing{color:var(--blue);background:rgba(96,165,250,.08);}
+
+/* FORM SECTION */
+.form-section{background:var(--surface);border:1px solid var(--border);padding:36px;margin-bottom:24px;}
+.form-section-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin-bottom:6px;}
+.form-section-sub{font-size:13px;color:var(--text-dim);margin-bottom:28px;line-height:1.6;}
+
+/* BANK INFO BOX */
+.bank-box{background:var(--surface-2);border:1px solid var(--border);padding:24px;margin-bottom:24px;}
+.bank-box-title{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+.bank-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;}
+.bank-row:last-child{border-bottom:none;}
+.bank-key{color:var(--text-muted);}
+.bank-val{font-weight:500;color:var(--text);}
+.copy-btn{background:none;border:none;color:var(--gold-dim);cursor:pointer;font-size:12px;margin-left:8px;transition:color .2s;}
+.copy-btn:hover{color:var(--gold);}
+
+/* STATUS STEPS */
+.steps{display:flex;gap:0;margin-bottom:28px;}
+.step{flex:1;padding:14px 16px;text-align:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--border);border-right:none;color:var(--text-muted);position:relative;}
+.step:last-child{border-right:1px solid var(--border);}
+.step.done{color:var(--green);background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.2);}
+.step.active{color:var(--gold);background:rgba(201,168,76,.05);border-color:var(--gold-dim);}
+
+/* ALERT */
+.alert{padding:14px 18px;margin-bottom:18px;font-size:13px;line-height:1.5;}
+.alert-info{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);color:var(--blue);}
+.alert-success{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:var(--green);}
+.alert-warning{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--yellow);}
+.alert-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);padding:40px;width:100%;max-width:500px;position:relative;animation:modalIn .3s ease;max-height:90vh;overflow-y:auto;}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;}
+.modal-close:hover{color:var(--text);}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--text-dim);margin-bottom:24px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;z-index:2000;background:var(--surface-2);border:1px solid var(--border);padding:14px 20px;min-width:280px;display:flex;align-items:flex-start;gap:12px;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:360px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-icon{font-size:18px;margin-top:1px;}
+.toast-body{flex:1;}
+.toast-title{font-size:14px;font-weight:500;margin-bottom:2px;}
+.toast-sub{font-size:12px;color:var(--text-dim);}
+.toast.success .toast-icon{color:var(--green);}
+.toast.error .toast-icon{color:var(--red);}
+.toast.info .toast-icon{color:var(--gold);}
+.toast.warn .toast-icon{color:var(--yellow);}
+
+/* NOTIF */
+.notif-item{padding:16px 24px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:14px;align-items:flex-start;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:rgba(201,168,76,.03);}
+.notif-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.notif-dot.success{background:var(--green);}
+.notif-dot.error{background:var(--red);}
+.notif-dot.info{background:var(--blue);}
+.notif-dot.warning{background:var(--yellow);}
+.notif-text{font-size:13px;line-height:1.5;}
+.notif-time{font-size:11px;color:var(--text-muted);margin-top:4px;}
+
+/* ADMIN STAT CARDS */
+.admin-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);margin-bottom:24px;}
+.admin-card{background:var(--surface);padding:24px 28px;text-align:center;}
+.admin-card-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--gold-light);}
+.admin-card-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted);margin-top:6px;}
+.admin-card.alert-card .admin-card-val{color:var(--red);}
+
+.empty{text-align:center;padding:48px;font-size:14px;color:var(--text-muted);}
+
+@media(max-width:900px){
+  .auth-left{display:none;}
+  .auth-wrap{grid-template-columns:1fr;}
+  .auth-right{padding:40px 24px;}
+  .dash-wrap{grid-template-columns:1fr;}
+  .sidebar{position:fixed;bottom:0;left:0;right:0;height:auto;z-index:100;flex-direction:row;border-right:none;border-top:1px solid var(--border);}
+  .sb-brand,.sb-user,.sb-bottom{display:none;}
+  .sb-nav{display:flex;padding:0;}
+  .nav-item{flex-direction:column;gap:3px;padding:10px 6px;font-size:9px;border-left:none;border-top:2px solid transparent;flex:1;justify-content:center;}
+  .nav-item.active{border-left:none;border-top-color:var(--gold);}
+  .dash-main{padding-bottom:64px;}
+  .dash-content{padding:20px 16px;}
+  .cards-row,.admin-cards{grid-template-columns:1fr 1fr;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ AUTH PAGE ════════════════ -->
+<div id="authPage" class="page active">
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-brand">Apex <span>Capital</span></div>
+    <h1 class="auth-title">Banking-grade<br><em>investment</em><br>platform.</h1>
+    <p class="auth-sub">Deposit via bank transfer, withdraw to your account — all managed securely with admin oversight.</p>
+    <div class="auth-stats">
+      <div><div class="auth-stat-v">$14.2B</div><div class="auth-stat-l">Assets Managed</div></div>
+      <div><div class="auth-stat-v">+18.6%</div><div class="auth-stat-l">Avg Annual Return</div></div>
+      <div><div class="auth-stat-v">340+</div><div class="auth-stat-l">Clients</div></div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchTab('login')">Sign In</div>
+        <div class="auth-tab" onclick="switchTab('register')">Open Account</div>
+      </div>
+      <div class="auth-form active" id="loginForm">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="loginEmail" placeholder="you@example.com"></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+        <button class="btn btn-primary btn-full" id="loginBtn" onclick="handleLogin()">Access Portfolio</button>
+        <div class="auth-msg" id="loginMsg"></div>
+      </div>
+      <div class="auth-form" id="registerForm">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">First Name</label><input class="form-input" type="text" id="regFirst" placeholder="James"></div>
+          <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" type="text" id="regLast" placeholder="Rothwell"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="regEmail" placeholder="you@example.com"></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="regPass" placeholder="Min. 8 characters"></div>
+        <div class="form-group"><label class="form-label">Phone (optional)</label><input class="form-input" type="tel" id="regPhone" placeholder="+1 (555) 000-0000"></div>
+        <button class="btn btn-primary btn-full" id="regBtn" onclick="handleRegister()">Open Account</button>
+        <div class="auth-msg" id="registerMsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div id="dashPage" class="page">
+<div class="dash-wrap">
+  <aside class="sidebar">
+    <div class="sb-brand"><div class="sb-brand-name">Apex <span>Capital</span></div></div>
+    <div class="sb-user">
+      <div class="sb-user-name" id="sbName">—</div>
+      <div class="sb-user-role" id="sbRole">Investor</div>
+    </div>
+    <nav class="sb-nav" id="sidebarNav"></nav>
+    <div class="sb-bottom"><button class="btn-logout" onclick="logout()">Sign Out</button></div>
+  </aside>
+  <main class="dash-main">
+    <div class="dash-header">
+      <div class="dash-title" id="dashTitle">Overview</div>
+      <div style="font-size:12px;color:var(--text-muted);" id="dashDate"></div>
+    </div>
+    <div class="dash-content" id="dashContent"></div>
+  </main>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toastIcon">✓</div>
+  <div class="toast-body"><div class="toast-title" id="toastTitle"></div><div class="toast-sub" id="toastSub"></div></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG — update API_BASE to your server URL
+// ══════════════════════════════════════════════
+const API_BASE = 'http://localhost:5000/api';
+let TOKEN = localStorage.getItem('apex_token');
+let CURRENT_USER = null;
+
+// ── API HELPER ─────────────────────────────────
+async function api(method, path, body, isFormData = false) {
+  const headers = { Authorization: `Bearer ${TOKEN}` };
+  if (!isFormData) headers['Content-Type'] = 'application/json';
+  try {
+    const res = await fetch(API_BASE + path, {
+      method, headers,
+      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ── AUTH ───────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('loginForm').classList.toggle('active', tab==='login');
+  document.getElementById('registerForm').classList.toggle('active', tab==='register');
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const msg   = document.getElementById('loginMsg');
+  const btn   = document.getElementById('loginBtn');
+  if (!email||!pass) { setMsg(msg,'error','Please fill all fields.'); return; }
+  btn.disabled=true; btn.textContent='Signing in…';
+  try {
+    const data = await api('POST','/auth/login',{email,password:pass});
+    TOKEN = data.token; localStorage.setItem('apex_token', TOKEN);
+    CURRENT_USER = data.user;
+    enterDashboard();
+  } catch(e) { setMsg(msg,'error',e.message); }
+  btn.disabled=false; btn.textContent='Access Portfolio';
+}
+
+async function handleRegister() {
+  const first = document.getElementById('regFirst').value.trim();
+  const last  = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  const phone = document.getElementById('regPhone').value.trim();
+  const msg   = document.getElementById('registerMsg');
+  const btn   = document.getElementById('regBtn');
+  if (!first||!last||!email||!pass) { setMsg(msg,'error','Please fill all required fields.'); return; }
+  btn.disabled=true; btn.textContent='Creating Account…';
+  try {
+    const data = await api('POST','/auth/register',{first_name:first,last_name:last,email,password:pass,phone});
+    TOKEN = data.token; localStorage.setItem('apex_token', TOKEN);
+    CURRENT_USER = data.user;
+    setMsg(msg,'success','Account created! Redirecting…');
+    setTimeout(enterDashboard, 600);
+  } catch(e) { setMsg(msg,'error',e.message); }
+  btn.disabled=false; btn.textContent='Open Account';
+}
+
+function logout() {
+  TOKEN=null; CURRENT_USER=null;
+  localStorage.removeItem('apex_token');
+  document.getElementById('dashPage').classList.remove('active');
+  document.getElementById('authPage').classList.add('active');
+}
+
+async function checkSession() {
+  if (!TOKEN) return;
+  try {
+    const data = await api('GET','/auth/me');
+    CURRENT_USER = data.user;
+    enterDashboard();
+  } catch { TOKEN=null; localStorage.removeItem('apex_token'); }
+}
+
+// ── DASHBOARD ──────────────────────────────────
+function enterDashboard() {
+  document.getElementById('authPage').classList.remove('active');
+  document.getElementById('dashPage').classList.add('active');
+  document.getElementById('sbName').textContent = `${CURRENT_USER.first_name} ${CURRENT_USER.last_name}`;
+  document.getElementById('sbRole').textContent = CURRENT_USER.role === 'admin' ? 'Administrator' : `Account ${CURRENT_USER.id?.slice(-6)||''}`;
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  buildNav();
+  showPanel('overview');
+}
+
+function buildNav() {
+  const isAdmin = CURRENT_USER.role === 'admin';
+  const userNav = [
+    {id:'overview',icon:'◈',label:'Overview'},
+    {id:'deposit',icon:'↓',label:'Deposit'},
+    {id:'withdrawal',icon:'↑',label:'Withdrawal'},
+    {id:'transactions',icon:'≡',label:'Transactions'},
+    {id:'notifications',icon:'🔔',label:'Notifications'},
+    {id:'settings',icon:'⚙',label:'Settings'},
+  ];
+  const adminNav = [
+    {id:'overview',icon:'◈',label:'Dashboard'},
+    {id:'admin-deposits',icon:'↓',label:'Deposits'},
+    {id:'admin-withdrawals',icon:'↑',label:'Withdrawals'},
+    {id:'admin-users',icon:'👤',label:'Users'},
+    {id:'notifications',icon:'🔔',label:'Notifications'},
+  ];
+  const nav = isAdmin ? adminNav : userNav;
+  document.getElementById('sidebarNav').innerHTML = nav.map(n =>
+    `<div class="nav-item" onclick="showPanel('${n.id}')" data-panel="${n.id}">
+      <span class="nav-icon">${n.icon}</span>${n.label}
+      ${n.id==='notifications'?`<span class="nav-badge" id="notifBadge" style="display:none;">0</span>`:''}
+    </div>`
+  ).join('');
+}
+
+const panelTitles = {
+  overview:'Portfolio Overview', deposit:'Deposit Funds', withdrawal:'Withdraw Funds',
+  transactions:'Transaction History', notifications:'Notifications', settings:'Account Settings',
+  'admin-deposits':'Manage Deposits','admin-withdrawals':'Manage Withdrawals','admin-users':'All Users',
+};
+
+async function showPanel(name) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.panel===name));
+  document.getElementById('dashTitle').textContent = panelTitles[name]||name;
+  const content = document.getElementById('dashContent');
+  content.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);">Loading…</div>`;
+  const isAdmin = CURRENT_USER.role === 'admin';
+  try {
+    if (name==='overview')       { isAdmin ? await renderAdminOverview() : await renderOverview(); }
+    else if(name==='deposit')    { await renderDeposit(); }
+    else if(name==='withdrawal') { await renderWithdrawal(); }
+    else if(name==='transactions'){ await renderTransactions(); }
+    else if(name==='notifications'){ await renderNotifications(); }
+    else if(name==='settings')   { renderSettings(); }
+    else if(name==='admin-deposits')   { await renderAdminDeposits(); }
+    else if(name==='admin-withdrawals'){ await renderAdminWithdrawals(); }
+    else if(name==='admin-users')      { await renderAdminUsers(); }
+  } catch(e) { content.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+// ── USER PANELS ─────────────────────────────────
+
+async function renderOverview() {
+  const d = await api('GET','/dashboard');
+  const u = d.user;
+  const total = parseFloat(u.cash_balance)+parseFloat(u.invested_balance);
+  const gain  = total - parseFloat(u.total_deposited) + parseFloat(u.total_withdrawn);
+  const ret   = u.total_deposited>0 ? (gain/u.total_deposited*100) : 0;
+  const c = (n,d=2) => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+  let pendingHtml = '';
+  if (d.pendingDeposits.length) pendingHtml += `<div class="alert alert-warning">⏳ You have ${d.pendingDeposits.length} pending deposit(s) awaiting admin approval.</div>`;
+  if (d.pendingWithdrawals.length) pendingHtml += `<div class="alert alert-info">⏳ You have ${d.pendingWithdrawals.length} withdrawal(s) in processing.</div>`;
+
+  document.getElementById('dashContent').innerHTML = `
+    ${pendingHtml}
+    <div class="balance-hero">
+      <div class="balance-label">Total Portfolio Value</div>
+      <div class="balance-amount"><span class="balance-curr">$</span>${c(total)}</div>
+      <div class="balance-row">
+        <div><div class="bal-item-val ${gain>=0?'pos':'neg'}">${gain>=0?'+':''}\$${c(Math.abs(gain))}</div><div class="bal-item-label">Total Gain</div></div>
+        <div><div class="bal-item-val ${ret>=0?'pos':'neg'}">${ret>=0?'+':''}${ret.toFixed(2)}%</div><div class="bal-item-label">Return</div></div>
+        <div><div class="bal-item-val">$${c(u.cash_balance)}</div><div class="bal-item-label">Available Cash</div></div>
+      </div>
+    </div>
+    <div class="cards-row">
+      <div class="card"><div class="card-label">Invested</div><div class="card-val">$${c(u.invested_balance)}</div><div class="card-sub">${total>0?(parseFloat(u.invested_balance)/total*100).toFixed(1)+'% of portfolio':'—'}</div></div>
+      <div class="card"><div class="card-label">Total Deposited</div><div class="card-val">$${c(u.total_deposited)}</div><div class="card-sub">${d.recentTx.filter(t=>t.type==='deposit').length} deposits</div></div>
+      <div class="card"><div class="card-label">Total Withdrawn</div><div class="card-val">$${c(u.total_withdrawn)}</div></div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-header"><div class="section-box-title">Recent Transactions</div><span style="font-size:12px;color:var(--gold);cursor:pointer;" onclick="showPanel('transactions')">View All →</span></div>
+      <div class="table-wrap">${txTable(d.recentTx)}</div>
+    </div>`;
+  updateNotifBadge(d.unread);
+}
+
+async function renderDeposit() {
+  const bankData = await api('GET','/deposits/bank-details');
+  const myDeps   = await api('GET','/deposits/my');
+
+  const refCode  = `APX-${CURRENT_USER.id?.slice(-6).toUpperCase()}`;
+  document.getElementById('dashContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <div class="form-section">
+          <div class="form-section-title">Make a Bank Transfer</div>
+          <div class="form-section-sub">Transfer funds to our bank account below, then submit the form with your reference number. Your balance will be credited after admin verification (usually within 1–24 hours).</div>
+
+          <div class="bank-box">
+            <div class="bank-box-title">Our Bank Details</div>
+            ${Object.entries({
+              'Bank Name':        bankData.bank_name,
+              'Account Name':     bankData.account_name,
+              'Account Number':   bankData.account_number,
+              'Routing Number':   bankData.routing_number,
+              'SWIFT / BIC':      bankData.swift_code,
+              'Your Reference':   refCode,
+            }).map(([k,v]) => `
+              <div class="bank-row">
+                <span class="bank-key">${k}</span>
+                <span class="bank-val">${v} <button class="copy-btn" onclick="copy('${v}')">⎘</button></span>
+              </div>`).join('')}
+          </div>
+
+          <div class="alert alert-warning" style="margin-bottom:20px;">⚠ Always use <strong>${refCode}</strong> as your payment reference so we can match your transfer.</div>
+
+          <div class="form-group"><label class="form-label">Amount Transferred ($)</label><input class="form-input" type="number" id="depAmount" placeholder="e.g. 5000" min="100"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Transfer Reference</label><input class="form-input" type="text" id="depRef" placeholder="${refCode}"></div>
+            <div class="form-group"><label class="form-label">Sender Bank Name</label><input class="form-input" type="text" id="depBank" placeholder="Chase Bank"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Sender Name (on bank account)</label><input class="form-input" type="text" id="depSender" placeholder="Full name on account"></div>
+          <div class="form-group"><label class="form-label">Proof of Payment (optional)</label><input class="form-input" type="file" id="depProof" accept=".jpg,.jpeg,.png,.pdf" style="padding:10px;"></div>
+          <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="depNotes" placeholder="Any additional notes…"></textarea></div>
+          <button class="btn btn-success btn-full" id="depBtn" onclick="submitDeposit()">Submit Deposit Request</button>
+          <div class="auth-msg" id="depMsg" style="text-align:left;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-box">
+          <div class="section-box-header"><div class="section-box-title">My Deposit Requests</div></div>
+          <div class="table-wrap">${depTable(myDeps.requests)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function submitDeposit() {
+  const btn = document.getElementById('depBtn');
+  const msg = document.getElementById('depMsg');
+  const amount = document.getElementById('depAmount').value;
+  const ref    = document.getElementById('depRef').value.trim();
+  const bank   = document.getElementById('depBank').value.trim();
+  const sender = document.getElementById('depSender').value.trim();
+  const notes  = document.getElementById('depNotes').value.trim();
+  const file   = document.getElementById('depProof').files[0];
+  if (!amount||!ref||!bank||!sender) { setMsg(msg,'error','Please fill all required fields.'); return; }
+  btn.disabled=true; btn.textContent='Submitting…';
+  try {
+    const fd = new FormData();
+    fd.append('amount',amount); fd.append('reference',ref);
+    fd.append('sender_bank',bank); fd.append('sender_name',sender);
+    if(notes) fd.append('notes',notes);
+    if(file)  fd.append('proof_file',file);
+    await api('POST','/deposits/request',fd,true);
+    showToast('success','✓ Request Submitted','Your deposit request is pending admin approval.');
+    await renderDeposit();
+  } catch(e) { setMsg(msg,'error',e.message); }
+  btn.disabled=false; btn.textContent='Submit Deposit Request';
+}
+
+async function renderWithdrawal() {
+  const userData = await api('GET','/auth/me');
+  const u = userData.user;
+  const myWds = await api('GET','/withdrawals/my');
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  document.getElementById('dashContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <div class="form-section">
+          <div class="form-section-title">Request Withdrawal</div>
+          <div class="form-section-sub">Your withdrawal request will be reviewed by our team and transferred to your bank within 1–5 business days. Funds are held from your balance immediately.</div>
+
+          <div class="bank-box" style="margin-bottom:20px;">
+            <div class="bank-box-title">Available Balance</div>
+            <div class="bank-row">
+              <span class="bank-key">Cash Balance</span>
+              <span class="bank-val" style="color:var(--green);font-size:18px;">$${c(u.cash_balance)}</span>
+            </div>
+            <div class="bank-row"><span class="bank-key">Daily Limit</span><span class="bank-val">$50,000</span></div>
+          </div>
+
+          <div class="form-group"><label class="form-label">Withdrawal Amount ($)</label><input class="form-input" type="number" id="wdAmount" placeholder="Min. $50" min="50" max="${u.cash_balance}"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Your Bank Name</label><input class="form-input" type="text" id="wdBank" placeholder="Chase Bank"></div>
+            <div class="form-group"><label class="form-label">Account Holder Name</label><input class="form-input" type="text" id="wdAccName" placeholder="Full name"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Account Number</label><input class="form-input" type="text" id="wdAccNum" placeholder="Account number"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Routing Number (ACH)</label><input class="form-input" type="text" id="wdRouting" placeholder="9-digit routing"></div>
+            <div class="form-group"><label class="form-label">SWIFT Code (Wire)</label><input class="form-input" type="text" id="wdSwift" placeholder="Optional"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="wdNotes" placeholder="Any notes…"></textarea></div>
+          <button class="btn btn-danger btn-full" id="wdBtn" onclick="submitWithdrawal()" style="border:none;background:var(--red);color:white;padding:14px;">Request Withdrawal</button>
+          <div class="auth-msg" id="wdMsg" style="text-align:left;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-box">
+          <div class="section-box-header"><div class="section-box-title">My Withdrawals</div></div>
+          <div class="table-wrap">${wdTable(myWds.requests)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function submitWithdrawal() {
+  const btn = document.getElementById('wdBtn');
+  const msg = document.getElementById('wdMsg');
+  const body = {
+    amount:         document.getElementById('wdAmount').value,
+    bank_name:      document.getElementById('wdBank').value.trim(),
+    account_name:   document.getElementById('wdAccName').value.trim(),
+    account_number: document.getElementById('wdAccNum').value.trim(),
+    routing_number: document.getElementById('wdRouting').value.trim(),
+    swift_code:     document.getElementById('wdSwift').value.trim(),
+    notes:          document.getElementById('wdNotes').value.trim(),
+  };
+  if (!body.amount||!body.bank_name||!body.account_name||!body.account_number) {
+    setMsg(msg,'error','Please fill all required fields.'); return;
+  }
+  btn.disabled=true; btn.textContent='Submitting…';
+  try {
+    await api('POST','/withdrawals/request',body);
+    showToast('success','✓ Withdrawal Submitted','Your request is under review. Funds are held from your balance.');
+    await renderWithdrawal();
+  } catch(e) { setMsg(msg,'error',e.message); }
+  btn.disabled=false; btn.textContent='Request Withdrawal';
+}
+
+async function renderTransactions() {
+  const d = await api('GET','/transactions?limit=100');
+  document.getElementById('dashContent').innerHTML = `
+    <div class="section-box">
+      <div class="section-box-header"><div class="section-box-title">All Transactions (${d.total})</div></div>
+      <div class="table-wrap">${txTable(d.transactions)}</div>
+    </div>`;
+}
+
+async function renderNotifications() {
+  const d = await api('GET','/notifications');
+  await api('PUT','/notifications/read-all');
+  updateNotifBadge(0);
+  document.getElementById('dashContent').innerHTML = `
+    <div class="section-box">
+      <div class="section-box-header"><div class="section-box-title">Notifications</div></div>
+      ${d.notifications.length ? d.notifications.map(n=>`
+        <div class="notif-item ${n.is_read?'':'unread'}">
+          <div class="notif-dot ${n.type}"></div>
+          <div><div class="notif-text"><strong>${n.title}</strong><br>${n.message}</div><div class="notif-time">${timeAgo(n.created_at)}</div></div>
+        </div>`).join('') : '<div class="empty">No notifications</div>'}
+    </div>`;
+}
+
+function renderSettings() {
+  const u = CURRENT_USER;
+  document.getElementById('dashContent').innerHTML = `
+    <div style="max-width:560px;">
+      <div class="form-section">
+        <div class="form-section-title">Profile Settings</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">First Name</label><input class="form-input" type="text" id="setFirst" value="${u.first_name||''}"></div>
+          <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" type="text" id="setLast" value="${u.last_name||''}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" value="${u.email||''}" disabled style="opacity:.5;"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" type="tel" id="setPhone" value="${u.phone||''}"></div>
+        <button class="btn btn-primary btn-full" onclick="saveProfile()">Save Profile</button>
+        <div class="auth-msg" id="setMsg" style="text-align:left;"></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Change Password</div>
+        <div class="form-group"><label class="form-label">Current Password</label><input class="form-input" type="password" id="currPass" placeholder="••••••••"></div>
+        <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" id="newPass" placeholder="Min. 8 characters"></div>
+        <button class="btn btn-primary btn-full" onclick="changePass()">Change Password</button>
+        <div class="auth-msg" id="passMsg" style="text-align:left;"></div>
+      </div>
+    </div>`;
+}
+
+async function saveProfile() {
+  const msg = document.getElementById('setMsg');
+  try {
+    await api('PUT','/auth/profile',{
+      first_name: document.getElementById('setFirst').value.trim(),
+      last_name:  document.getElementById('setLast').value.trim(),
+      phone:      document.getElementById('setPhone').value.trim(),
+    });
+    const d = await api('GET','/auth/me');
+    CURRENT_USER = d.user;
+    document.getElementById('sbName').textContent = `${CURRENT_USER.first_name} ${CURRENT_USER.last_name}`;
+    setMsg(msg,'success','Profile updated.');
+  } catch(e) { setMsg(msg,'error',e.message); }
+}
+
+async function changePass() {
+  const msg = document.getElementById('passMsg');
+  try {
+    await api('PUT','/auth/change-password',{
+      current_password: document.getElementById('currPass').value,
+      new_password:     document.getElementById('newPass').value,
+    });
+    setMsg(msg,'success','Password changed successfully.');
+    document.getElementById('currPass').value=''; document.getElementById('newPass').value='';
+  } catch(e) { setMsg(msg,'error',e.message); }
+}
+
+// ── ADMIN PANELS ──────────────────────────────
+
+async function renderAdminOverview() {
+  const d = await api('GET','/admin/dashboard');
+  const s = d.stats;
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('dashContent').innerHTML = `
+    <div class="admin-cards">
+      <div class="admin-card"><div class="admin-card-val">$${c(s.total_aum)}</div><div class="admin-card-label">Total AUM</div></div>
+      <div class="admin-card"><div class="admin-card-val">${s.total_users}</div><div class="admin-card-label">Total Users</div></div>
+      <div class="admin-card"><div class="admin-card-val">$${c(s.total_deposited)}</div><div class="admin-card-label">Total Deposited</div></div>
+      <div class="admin-card ${s.pending_deposits>0?'alert-card':''}"><div class="admin-card-val">${s.pending_deposits}</div><div class="admin-card-label">Pending Deposits</div></div>
+      <div class="admin-card ${s.pending_withdrawals>0?'alert-card':''}"><div class="admin-card-val">${s.pending_withdrawals}</div><div class="admin-card-label">Pending Withdrawals</div></div>
+      <div class="admin-card"><div class="admin-card-val">$${c(s.total_withdrawn)}</div><div class="admin-card-label">Total Withdrawn</div></div>
+    </div>
+    <div class="section-box" style="margin-bottom:24px;">
+      <div class="section-box-header"><div class="section-box-title">Recent Deposit Requests</div><span onclick="showPanel('admin-deposits')" style="font-size:12px;color:var(--gold);cursor:pointer;">View All →</span></div>
+      <div class="table-wrap">${adminDepTable(d.recentDeposits)}</div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-header"><div class="section-box-title">Recent Withdrawal Requests</div><span onclick="showPanel('admin-withdrawals')" style="font-size:12px;color:var(--gold);cursor:pointer;">View All →</span></div>
+      <div class="table-wrap">${adminWdTable(d.recentWithdrawals)}</div>
+    </div>`;
+}
+
+async function renderAdminDeposits() {
+  const d = await api('GET','/deposits/admin/all');
+  document.getElementById('dashContent').innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="loadAdminDeps('',this)" style="font-size:11px;letter-spacing:.1em;">All</button>
+      <button class="btn btn-ghost" onclick="loadAdminDeps('pending',this)" style="font-size:11px;letter-spacing:.1em;">Pending</button>
+      <button class="btn btn-ghost" onclick="loadAdminDeps('approved',this)" style="font-size:11px;letter-spacing:.1em;">Approved</button>
+      <button class="btn btn-ghost" onclick="loadAdminDeps('rejected',this)" style="font-size:11px;letter-spacing:.1em;">Rejected</button>
+    </div>
+    <div class="section-box" id="adminDepBox">
+      <div class="section-box-header"><div class="section-box-title">Deposit Requests (${d.requests.length})</div></div>
+      <div class="table-wrap">${adminDepTable(d.requests)}</div>
+    </div>`;
+}
+
+async function loadAdminDeps(status, btn) {
+  const d = await api('GET',`/deposits/admin/all${status?'?status='+status:''}`);
+  document.getElementById('adminDepBox').innerHTML = `
+    <div class="section-box-header"><div class="section-box-title">Deposit Requests (${d.requests.length})</div></div>
+    <div class="table-wrap">${adminDepTable(d.requests)}</div>`;
+}
+
+async function renderAdminWithdrawals() {
+  const d = await api('GET','/withdrawals/admin/all');
+  document.getElementById('dashContent').innerHTML = `
+    <div class="section-box">
+      <div class="section-box-header"><div class="section-box-title">Withdrawal Requests (${d.requests.length})</div></div>
+      <div class="table-wrap">${adminWdTable(d.requests)}</div>
+    </div>`;
+}
+
+async function renderAdminUsers() {
+  const d = await api('GET','/admin/users');
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('dashContent').innerHTML = `
+    <div class="section-box">
+      <div class="section-box-header"><div class="section-box-title">All Users (${d.users.length})</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Cash</th><th>Invested</th><th>Deposited</th><th>Status</th><th>Joined</th></tr></thead>
+          <tbody>${d.users.map(u=>`
+            <tr>
+              <td>${u.first_name} ${u.last_name}</td>
+              <td>${u.email}</td>
+              <td style="color:var(--green)">$${c(u.cash_balance)}</td>
+              <td>$${c(u.invested_balance)}</td>
+              <td>$${c(u.total_deposited)}</td>
+              <td><span class="badge ${u.status==='active'?'badge-approved':'badge-rejected'}">${u.status}</span></td>
+              <td>${new Date(u.created_at).toLocaleDateString()}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── ADMIN ACTIONS ──────────────────────────────
+
+function adminAction(type, id, action) {
+  openModal(`
+    <div class="modal-title">${action==='approve'?'Approve':'Reject'} ${type}</div>
+    <div class="modal-sub">Optionally add a note to the user.</div>
+    <div class="form-group"><label class="form-label">Admin Note (optional)</label><textarea class="form-textarea" id="adminNote" placeholder="Reason or note…"></textarea></div>
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn ${action==='approve'?'btn-success':'btn-danger'}" style="flex:1;" onclick="confirmAdminAction('${type}','${id}','${action}')">
+        ${action==='approve'?'✓ Approve':'✕ Reject'}
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal()" style="flex:1;">Cancel</button>
+    </div>`);
+}
+
+async function confirmAdminAction(type, id, action) {
+  const note = document.getElementById('adminNote').value.trim();
+  try {
+    if (type==='deposit') {
+      await api('POST',`/deposits/admin/${action}/${id}`, {admin_note:note});
+    } else {
+      await api('POST',`/withdrawals/admin/${action}/${id}`, {admin_note:note});
+    }
+    closeModal();
+    showToast('success','✓ Done', `${type} ${action}d successfully.`);
+    if(type==='deposit') renderAdminDeposits(); else renderAdminWithdrawals();
+  } catch(e) { showToast('error','Error',e.message); }
+}
+
+async function markWdComplete(id) {
+  try {
+    await api('POST',`/withdrawals/admin/complete/${id}`);
+    showToast('success','✓ Marked Complete','Withdrawal completed.');
+    renderAdminWithdrawals();
+  } catch(e) { showToast('error','Error',e.message); }
+}
+
+// ── TABLE HELPERS ─────────────────────────────
+
+function txTable(rows) {
+  if (!rows||!rows.length) return '<div class="empty">No transactions yet</div>';
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const icons = {deposit:'↓',withdrawal:'↑',investment:'◇',return:'★',fee:'•',adjustment:'~'};
+  return `<table>
+    <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Balance After</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody>${rows.map(t=>`
+      <tr>
+        <td><span style="font-size:16px;">${icons[t.type]||'•'}</span></td>
+        <td>${t.description||'—'}</td>
+        <td style="color:${t.amount>=0?'var(--green)':'var(--red)'};font-family:'Cormorant Garamond',serif;font-size:18px;">
+          ${t.amount>=0?'+':''}\$${c(Math.abs(t.amount))}
+        </td>
+        <td>$${c(t.balance_after)}</td>
+        <td><span class="badge badge-${t.status}">${t.status}</span></td>
+        <td style="color:var(--text-muted);">${new Date(t.created_at).toLocaleString()}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function depTable(rows) {
+  if (!rows||!rows.length) return '<div class="empty">No deposit requests yet</div>';
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `<table>
+    <thead><tr><th>Amount</th><th>Reference</th><th>Bank</th><th>Status</th><th>Note</th><th>Date</th></tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr>
+        <td style="color:var(--green);font-family:'Cormorant Garamond',serif;font-size:18px;">+$${c(r.amount)}</td>
+        <td style="font-size:12px;color:var(--text-muted);">${r.reference}</td>
+        <td>${r.sender_bank}</td>
+        <td><span class="badge badge-${r.status}">${r.status}</span></td>
+        <td style="font-size:12px;color:var(--text-muted);">${r.admin_note||'—'}</td>
+        <td style="color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString()}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function wdTable(rows) {
+  if (!rows||!rows.length) return '<div class="empty">No withdrawal requests yet</div>';
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `<table>
+    <thead><tr><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Note</th><th>Date</th></tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr>
+        <td style="color:var(--red);font-family:'Cormorant Garamond',serif;font-size:18px;">-$${c(r.amount)}</td>
+        <td>${r.bank_name}</td>
+        <td style="font-size:12px;">${r.account_name}</td>
+        <td><span class="badge badge-${r.status}">${r.status}</span></td>
+        <td style="font-size:12px;color:var(--text-muted);">${r.admin_note||'—'}</td>
+        <td style="color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString()}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function adminDepTable(rows) {
+  if (!rows||!rows.length) return '<div class="empty">No requests</div>';
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `<table>
+    <thead><tr><th>User</th><th>Amount</th><th>Reference</th><th>Sender</th><th>Bank</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr>
+        <td><div style="font-weight:500;">${r.first_name} ${r.last_name}</div><div style="font-size:11px;color:var(--text-muted);">${r.email}</div></td>
+        <td style="color:var(--green);font-family:'Cormorant Garamond',serif;font-size:18px;">$${c(r.amount)}</td>
+        <td style="font-size:12px;color:var(--gold);">${r.reference}</td>
+        <td>${r.sender_name}</td>
+        <td>${r.sender_bank}</td>
+        <td><span class="badge badge-${r.status}">${r.status}</span></td>
+        <td style="color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString()}</td>
+        <td>${r.status==='pending'?`
+          <button class="btn btn-success" style="padding:6px 12px;font-size:10px;margin-right:4px;" onclick="adminAction('deposit','${r.id}','approve')">✓ Approve</button>
+          <button class="btn btn-danger" style="padding:6px 12px;font-size:10px;" onclick="adminAction('deposit','${r.id}','reject')">✕ Reject</button>`
+          : '—'}
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function adminWdTable(rows) {
+  if (!rows||!rows.length) return '<div class="empty">No requests</div>';
+  const c = n => parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `<table>
+    <thead><tr><th>User</th><th>Amount</th><th>Bank</th><th>Account</th><th>Routing</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr>
+        <td><div style="font-weight:500;">${r.first_name} ${r.last_name}</div><div style="font-size:11px;color:var(--text-muted);">${r.email}</div></td>
+        <td style="color:var(--red);font-family:'Cormorant Garamond',serif;font-size:18px;">$${c(r.amount)}</td>
+        <td>${r.bank_name}</td>
+        <td style="font-size:12px;">${r.account_name}<br><span style="color:var(--text-muted);">${r.account_number}</span></td>
+        <td style="font-size:12px;color:var(--text-muted);">${r.routing_number||'—'}</td>
+        <td><span class="badge badge-${r.status}">${r.status}</span></td>
+        <td style="color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString()}</td>
+        <td>
+          ${r.status==='pending'?`
+            <button class="btn btn-success" style="padding:5px 10px;font-size:10px;margin-bottom:4px;display:block;" onclick="adminAction('withdrawal','${r.id}','approve')">✓ Approve</button>
+            <button class="btn btn-danger" style="padding:5px 10px;font-size:10px;display:block;" onclick="adminAction('withdrawal','${r.id}','reject')">✕ Reject</button>`
+          : r.status==='processing' ? `
+            <button class="btn btn-success" style="padding:5px 10px;font-size:10px;" onclick="markWdComplete('${r.id}')">Mark Sent</button>`
+          : '—'}
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ── UI HELPERS ─────────────────────────────────
+
+function setMsg(el,type,text) { el.className='auth-msg '+type; el.textContent=text; }
+
+let toastTimer;
+function showToast(type,title,sub) {
+  const t=document.getElementById('toast');
+  const icons={success:'✓',error:'✕',info:'◆',warn:'⚠'};
+  t.className='toast '+type;
+  document.getElementById('toastIcon').textContent=icons[type]||'•';
+  document.getElementById('toastTitle').textContent=title;
+  document.getElementById('toastSub').textContent=sub||'';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),4500);
+}
+
+function openModal(html) { document.getElementById('modalBody').innerHTML=html; document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function updateNotifBadge(n) {
+  const b=document.getElementById('notifBadge');
+  if(!b) return;
+  b.textContent=n; b.style.display=n>0?'inline':'none';
+}
+
+function copy(text) {
+  navigator.clipboard.writeText(text).then(()=>showToast('info','Copied','Copied to clipboard'));
+}
+
+function timeAgo(iso) {
+  const diff=(Date.now()-new Date(iso))/1000;
+  if(diff<60) return 'just now';
+  if(diff<3600) return `${Math.floor(diff/60)}m ago`;
+  if(diff<86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+// ── BOOT ──────────────────────────────────────
+checkSession();
+</script>
+</body>
+</html>
